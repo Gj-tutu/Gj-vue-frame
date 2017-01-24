@@ -6,11 +6,9 @@ import Home from './components/Home'
 import TimeEntries from './components/TimeEntries.vue'
 import LogTime from './components/LogTime.vue'
 import NotFound from './components/404'
-import VueResource from 'vue-resource'
 import 'bootstrap/dist/css/bootstrap.css'
 
 Vue.use(VueRouter)
-Vue.use(VueResource)
 
 const routes = [{
   path : '/',
