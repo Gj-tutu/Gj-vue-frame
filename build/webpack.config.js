@@ -1,57 +1,51 @@
 const webpack = require('webpack')
 const cssnano = require('cssnano')
+const pxtorem = require('postcss-pxtorem')
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const config = require('../config')
 const debug = require('debug')('app:webpack:config')
-
 const paths = config.utils_paths
 const __DEV__ = config.globals.__DEV__
 const __PROD__ = config.globals.__PROD__
 const __TEST__ = config.globals.__TEST__
-
 debug('Creating configuration.')
 const webpackConfig = {
-  name: 'client',
-  target: 'web',
-  devtool: config.compiler_devtool,
-  resolve: {
-    root: paths.client(),
-    extensions: ['', '.js', '.vue', '.json']
-  },
-  module: {}
-}
-// ------------------------------------
-// Entry Points
-// ------------------------------------
+    name: 'client',
+    target: 'web',
+    devtool: config.compiler_devtool,
+    resolve: {
+      root: paths.client(),
+      extensions: ['', '.js', '.vue', '.json']
+    },
+    module: {}
+  }
+  // ------------------------------------
+  // Entry Points
+  // ------------------------------------
 const APP_ENTRY = paths.client('main.js')
-
 webpackConfig.entry = {
-  app: __DEV__
-    ? [APP_ENTRY].concat(`webpack-hot-middleware/client?path=${config.compiler_public_path}__webpack_hmr`)
-    : [APP_ENTRY],
-  vendor: config.compiler_vendors
-}
-
-// ------------------------------------
-// Bundle Output
-// ------------------------------------
+    app: __DEV__ ? [APP_ENTRY].concat(`webpack-hot-middleware/client?path=${config.compiler_public_path}__webpack_hmr`) : [APP_ENTRY],
+    vendor: config.compiler_vendors
+  }
+  // ------------------------------------
+  // Bundle Output
+  // ------------------------------------
 webpackConfig.output = {
-  filename: `[name].[${config.compiler_hash_type}].js`,
-  path: paths.dist(),
-  publicPath: config.compiler_public_path
-}
-
-// ------------------------------------
-// Plugins
-// ------------------------------------
+    filename: `[name].[${config.compiler_hash_type}].js`,
+    path: paths.tmp(),
+    publicPath: config.compiler_public_path
+  }
+  // ------------------------------------
+  // Plugins
+  // ------------------------------------
 webpackConfig.plugins = [
   new webpack.DefinePlugin(config.globals),
   new HtmlWebpackPlugin({
     template: paths.client('index.html'),
     hash: false,
-    // favicon: paths.client('static/favicon.ico'),
+    favicon: paths.client('static/favicon.ico'),
     filename: 'index.html',
     inject: 'body',
     minify: {
@@ -60,32 +54,18 @@ webpackConfig.plugins = [
     globals: config.globals
   })
 ]
-
-if (__DEV__) {
+if(__DEV__) {
   debug('Enable plugins for live development (HMR, NoErrors).')
-  webpackConfig.plugins.push(
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoErrorsPlugin()
-  )
-} else if (__PROD__ || __TEST__) {
+  webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin(), new webpack.NoErrorsPlugin())
+} else if(__PROD__ || __TEST__) {
   debug('Enable plugins for production (OccurenceOrder, Dedupe & UglifyJS).')
-  webpackConfig.plugins.push(
-    new webpack.optimize.OccurrenceOrderPlugin(),
-    new webpack.optimize.DedupePlugin()
-  )
-  if (__PROD__) {
-    webpackConfig.plugins.push(
-      new webpack.optimize.CommonsChunkPlugin({
+  webpackConfig.plugins.push(new webpack.optimize.OccurrenceOrderPlugin(), new webpack.optimize.DedupePlugin())
+  if(__PROD__) {
+    webpackConfig.plugins.push(new webpack.optimize.CommonsChunkPlugin({
         name: ['vendor'],
-        minChunks: function (module, count) {
+        minChunks: function(module, count) {
           // any required modules inside node_modules are extracted to vendor
-          return (
-            module.resource &&
-            /\.js$/.test(module.resource) &&
-            module.resource.indexOf(
-              path.join(__dirname, '../node_modules')
-            ) === 0
-          )
+          return(module.resource && /\.js$/.test(module.resource) && module.resource.indexOf(path.join(__dirname, '../node_modules')) === 0)
         }
       }),
       // extract webpack runtime and module manifest to its own file in order to
@@ -98,109 +78,98 @@ if (__DEV__) {
         compress: {
           warnings: false
         }
-      })
-    )
+      }), new ExtractTextPlugin(`[name].[${config.compiler_hash_type}].css`, {
+        allChunks: true
+      }))
   }
 }
-
 // ------------------------------------
 // Loaders
 // ------------------------------------
 // File loaders
 // JavaScript / JSON
-webpackConfig.module.loaders = [
-  {
-    test: /\.vue$/,
-    loader: 'vue'
-  },
-  {
-    test: /\.js$/,
-    loader: 'babel',
-    exclude: /node_modules/
-  },
-  {
-    test: /\.json$/,
-    loader: 'json'
-  },
-  {
-    test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-    loader: 'url',
-    query: {
-      limit: 10240,
-      name: `img/[name].[${config.compiler_hash_type}].[ext]`
-    }
-  },
-  {
-    test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-    loader: 'url',
-    query: {
-      limit: 10240,
-      name: `fonts/[name].[${config.compiler_hash_type}].[ext]`
-    }
+webpackConfig.module.loaders = [{
+  test: /\.vue$/,
+  loader: 'vue'
+}, {
+  test: /\.js$/,
+  loader: 'babel',
+  exclude: /node_modules/
+}, {
+  test: /\.json$/,
+  loader: 'json'
+}, {
+  test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+  loader: 'url',
+  query: {
+    limit: 10240,
+    name: `[name].[hash].[ext]`
   }
-]
+}, {
+  test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+  loader: 'url',
+  query: {
+    limit: 10240,
+    name: `[name].[hash].[ext]`
+  }
+}]
 
+function loaderAnalysis(loaders) {
+  if(__PROD__) {
+    return ExtractTextPlugin.extract(loaders.shift(), loaders.join('!'))
+  }
+  return loaders.join('!')
+}
 webpackConfig.module.loaders.push({
-  test: /\.scss$/,
+  test: /\.less$/,
   exclude: null,
-  loader: ExtractTextPlugin.extract('style-loader', 'css-loader!sass-loader!postcss-loader')
+  loader: loaderAnalysis(['style-loader', 'css-loader', 'postcss-loader', 'less-loader'])
 })
-
 webpackConfig.module.loaders.push({
   test: /\.css$/,
   exclude: null,
-  loader: ExtractTextPlugin.extract('style-loader', 'css-loader!postcss-loader')
+  loader: loaderAnalysis(['style-loader', 'css-loader', 'postcss-loader'])
 })
-
-webpackConfig.sassLoader = {
-  includePaths: paths.client('styles')
-}
-
 webpackConfig.postcss = [
-  cssnano({
-    autoprefixer: {
-      add: true,
-      remove: true,
-      browsers: ['last 2 versions']
-    },
-    discardComments: {
-      removeAll: true
-    },
-    discardUnused: false,
-    mergeIdents: false,
-    reduceIdents: false,
-    safe: true,
-    sourcemap: true
-  })
-]
-// ------------------------------------
-// Style Loaders
-// ------------------------------------
-// We use cssnano with the postcss loader, so we tell
-// css-loader not to duplicate minimization.
-
+    cssnano({
+      autoprefixer: {
+        add: true,
+        browsers: ['iOS >= 7', 'Android >= 4.1']
+      },
+      discardComments: {
+        removeAll: true
+      },
+      discardUnused: false,
+      mergeIdents: false,
+      reduceIdents: false,
+      safe: true,
+      sourcemap: true
+    }),
+    pxtorem({
+      rootValue: 50,
+      propWhiteList: []
+    })
+  ]
+  // ------------------------------------
+  // Style Loaders
+  // ------------------------------------
+  // We use cssnano with the postcss loader, so we tell
+  // css-loader not to duplicate minimization.
 webpackConfig.vue = {
-  loaders: {
-    'css': ExtractTextPlugin.extract('vue-style-loader', 'css-loader!postcss-loader'),
-    'scss': ExtractTextPlugin.extract('vue-style-loader', 'css-loader!sass-loader!postcss-loader')
+    loaders: {
+      'css': loaderAnalysis(['vue-style-loader', 'css-loader', 'postcss-loader']),
+      'less': loaderAnalysis(['vue-style-loader', 'css-loader', 'postcss-loader', 'less-loader'])
+    }
   }
-}
-
-/* eslint-disable */
-
-/* eslint-enable */
-
-// ------------------------------------
-// Finalize Configuration
-// ------------------------------------
-// when we don't know the public path (we know it only when HMR is enabled [in development]) we
-// need to use the extractTextPlugin to fix this issue:
-// http://stackoverflow.com/questions/34133808/webpack-ots-parsing-error-loading-fonts/34133809#34133809
-
-webpackConfig.plugins.push(
-  new ExtractTextPlugin(`css/[name].[${config.compiler_hash_type}].css`, {
-    allChunks: true
-  })
-)
-
-module.exports = webpackConfig
+  /* eslint-disable */
+  /* eslint-enable */
+  // ------------------------------------
+  // Finalize Configuration
+  // ------------------------------------
+const vuxLoader = require('vux-loader')
+module.exports = vuxLoader.merge(webpackConfig, {
+  options: {},
+  plugins: [{
+    name: 'vux-ui'
+  }]
+})

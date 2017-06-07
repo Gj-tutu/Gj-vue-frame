@@ -1,19 +1,14 @@
 <template>
-  <div>我是404页面</div>
+  <div>
+    404
+  </div>
 </template>
 <style>
 
 </style>
 <script>
-
-    export default{
-        data(){
-            return{
-
-            }
-        },
-        components:{
-
-        }
-    }
+export default{
+  components: {
+  }
+}
 </script>
