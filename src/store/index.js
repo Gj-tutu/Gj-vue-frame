@@ -1,16 +1,11 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import mutations from './mutations'
-import actions from './actions'
-import * as Types from './types'
+import user from './user'
 import createLogger from 'vuex/dist/logger'
-const state = {
-  user: {}
-}
 export default new Vuex.Store({
-  state,
-  mutations,
-  actions,
+  modules: {
+    user
+  },
   plugins: __DEV__ ? [createLogger({
     collapsed: false, // 自动展开记录的 mutation
     transformer(state) {
