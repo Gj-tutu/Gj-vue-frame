@@ -1,41 +1,13 @@
-const POST = 'post'
-const GET = 'get'
-
-const ApiSetting = {
-  userLogin: {
-    url: '/login',
-    method: POST
-  },
-  getStore: {
-    url: '/buffet-meal/store/{store_id}',
-    method: GET
-  },
-  makeOrder: {
-    url: '/buffet-meal/order',
-    method: POST
-  },
-  editOrder: {
-    url: '/buffet-meal/order/edit/{id}',
-    method: POST
-  },
-  addOrder: {
-    url: '/buffet-meal/order/add/{id}',
-    method: POST
-  },
-  getOrder: {
-    url: '/buffet-meal/order/{id}',
-    method: GET
-  },
-  payOrder: {
-    url: '/buffet-meal/order/{id}/pay',
-    method: POST
-  },
-  payCallBack: {
-    url: '/pay/client/{id}',
-    method: POST
-  }
-}
-
+/**
+ * 接口统一配置信息
+ * 可配置请求类型,是否需要验证,支持path参数
+ */
+export const POST = 'post'
+export const GET = 'get'
+export const PUT = 'put'
+export const DELETE = 'delete'
+export const UPLOAD = 'upload'
+export const FORM = 'form'
+const ApiSetting = {}
 export default ApiSetting
-
 export const ApiPath = __API_PATH__

@@ -2,64 +2,14 @@
 <html lang="zh">
 
 <head>
-  <title>出柜么</title>
-  <meta charset="utf-8">
-  <style>
-    #loading {
-      border-radius: 100%;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      margin-top: -0.5rem;
-      margin-left: -0.5rem;
-      animation-fill-mode: both;
-      border: 0.05rem solid #555;
-      border-bottom-color: transparent;
-      height: 0.5rem;
-      width: 0.5rem;
-      background: transparent!important;
-      display: inline-block;
-      animation: rotate .75s 0s linear infinite;
-    }
-    
-    @-webkit-keyframes rotate {
-      0% {
-        -webkit-transform: rotate(0deg);
-        transform: rotate(0deg);
-      }
-      50% {
-        -webkit-transform: rotate(180deg);
-        transform: rotate(180deg);
-      }
-      100% {
-        -webkit-transform: rotate(360deg);
-        transform: rotate(360deg);
-      }
-    }
-    
-    @keyframes rotate {
-      0% {
-        -webkit-transform: rotate(0deg);
-        transform: rotate(0deg);
-      }
-      50% {
-        -webkit-transform: rotate(180deg);
-        transform: rotate(180deg);
-      }
-      100% {
-        -webkit-transform: rotate(360deg);
-        transform: rotate(360deg);
-      }
-    }
-  </style>
-</head>
+  <title>
+    <%= htmlWebpackPlugin.options.title %>
+  </title>
+  <meta name="description" content="<%= htmlWebpackPlugin.options.globals.description %>">
+  <meta name="keyword" content="<%= htmlWebpackPlugin.options.globals.keyword %>">
 
-<body>
-  <div id="root">
-    <div id="app">
-      <div id='loading'></div>
-    </div>
-  </div>
+  <link rel="shortcut icon" href="/favicon.ico">
+  <meta charset="utf-8">
   <script>
     ! function(e) {
       function t(a) {
@@ -88,7 +38,7 @@
           l = o.match(/U3\/((\d+|\.){5,})/i),
           c = l && parseInt(l[1].split(".").join(""), 10) >= 80,
           p = navigator.appVersion.match(/(iphone|ipad|ipod)/gi),
-          s = i.devicePixelRatio || 1;
+          s = 1; //i.devicePixelRatio || 1;
         p || d && d[1] > 534 || c || (s = 1);
         var u = 1 / s,
           m = r.querySelector('meta[name="viewport"]');
@@ -96,8 +46,23 @@
       }, e.exports = t["default"]
     }]);
     flex(100, 1);
+    window.onresize = function() {
+      flex(100, 1);
+    }
   </script>
+
+  <script src="/pace.min.js"></script>
+  <link href="/pace-theme-minimal.css" rel="stylesheet" />
+
+  <% for (var i = 0; i < htmlWebpackPlugin.options.globals.scripts.length; i++) { %>
+    <script type="text/javascript" src="<%= htmlWebpackPlugin.options.globals.scripts[i] %>"></script>
+    <% } %>
+</head>
+
+<body>
+  <div id="root" class="root"></div>
   <script>
+    /*fix android bug*/
     if (!Array.prototype.findIndex) {
       Object.defineProperty(Array.prototype, "findIndex", {
         value: function(predicate) {
@@ -122,37 +87,43 @@
         }
       });
     }
+    if (!Array.prototype.fill) {
+      Object.defineProperty(Array.prototype, 'fill', {
+        value: function(value) {
+          if (this == null) {
+            throw new TypeError('this is null or not defined');
+          }
+          var O = Object(this);
+          var len = O.length >>> 0;
+          var start = arguments[1];
+          var relativeStart = start >> 0;
+          var k = relativeStart < 0 ?
+            Math.max(len + relativeStart, 0) :
+            Math.min(relativeStart, len);
+          var end = arguments[2];
+          var relativeEnd = end === undefined ?
+            len : end >> 0;
+          var final = relativeEnd < 0 ?
+            Math.max(len + relativeEnd, 0) :
+            Math.min(relativeEnd, len);
+          while (k < final) {
+            O[k] = value;
+            k++;
+          }
+          return O;
+        }
+      });
+    }
     Object.defineProperty(Array.prototype, 'has', {
       value: function(value) {
-        var _list = Object(this);
-        var _length = _list.length >>> 0;
+        var _list = Object(this)
+        var _length = _list.length >>> 0
         for (var i = 0; i < _length; i++) {
-          if (_list[i] == value) return i
+          if (_list[i] === value) return i
         }
         return -1
       }
-    });
-    window.setCookie = function(name, value, time) {
-      var exp = new Date();
-      exp.setTime(exp.getTime() + time * 1000);
-      document.cookie = name + '=' + escape(value) + ';expires=' + exp.toGMTString() + ';path=/'
-    };
-    window.getCookie = function(name) {
-      var arr, reg = new RegExp('(^| )' + name + '=([^;]*)(;|$)')
-      if (arr = document.cookie.match(reg)) {
-        return unescape(arr[2])
-      } else {
-        return null
-      }
-    };
-    window.delCookie = function(name) {
-      var exp = new Date();
-      exp.setTime(exp.getTime() - 1);
-      var cval = window.getCookie(name);
-      if (cval != null) {
-        document.cookie = name + '=' + cval + ';expires=' + exp.toGMTString() + ';path=/'
-      }
-    };
+    })
     Date.prototype.format = function(format) {
       if (!format) format = 'yyyy-MM-dd';
       var o = {
@@ -170,19 +141,8 @@
       }
       return format
     };
-    Date.prototype.getRoughTime = function() {
-      return Math.ceil(this.getTime() / 1000)
-    };
-    Date.prototype.getDayTime = function() {
-      return Math.ceil(new Date(this.format()).getTime() / 1000)
-    };
-    Date.nowTime = function() {
-      return Math.ceil(Date.now() / 1000)
-    };
-    Date.todayTime = function() {
-      return Math.ceil(new Date(new Date().format()).getTime() / 1000)
-    }
   </script>
+
 </body>
 
 </html>
